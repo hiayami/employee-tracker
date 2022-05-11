@@ -19,9 +19,10 @@ async function main() {
       {
         type: "list",
         name: "action",
-        message: "Select command",
+        message: "What would you like to do?",
         choices: [
           "View all departments",
+          "View department budget",
           "View all roles",
           "View all employees",
           "Add a department",
@@ -38,8 +39,33 @@ async function main() {
     } else if (action == "View all departments") {
       const [departments] = await connection
         .promise()
-        .query("select * from department");
+        .query("SELECT * FROM department");
       console.table(departments);
+    } else if (action == "View department budget") {
+      const [departments] = await connection.promise().query(`
+        SELECT id AS value, name 
+        FROM department
+      `)
+      const departmentChoice = await inquirer.prompt([
+        {name: 'department', message: 'Select department to view budget',
+        type: 'list', choices: departments
+      }
+      ])
+      const [budgetInfo] = await connection.promise().query(`
+        SELECT SUM(r.salary) AS budget
+        FROM employee e
+        JOIN role r ON r.id = e.role_id
+        WHERE r.department_id = ?
+        GROUP BY r.department_id
+      `, [departmentChoice.department])
+      const idx = departments.findIndex(department => department.value == departmentChoice.department)
+      console.table([
+        {
+          id: departments[idx].value, 
+          name: departments[idx].name,
+          budget: budgetInfo[0].budget
+        }
+      ])
     } else if (action == "View all roles") {
       const [roles] = await connection.promise().query(`
             select r.id, r.title, r.salary, d.name as department
