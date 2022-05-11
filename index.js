@@ -1,7 +1,7 @@
 const mysql = require("mysql2");
 const inquirer = require("inquirer");
 const fs = require("fs");
-const table = require('console.table');
+const table = require("console.table");
 
 async function main() {
   const schema = fs.readFileSync("db/schema.sql", { encoding: "utf-8" });
@@ -36,17 +36,19 @@ async function main() {
     if (action == "Quit") {
       break;
     } else if (action == "View all departments") {
-        const [departments] = await connection.promise().query('select * from department')
-        console.table(departments)
+      const [departments] = await connection
+        .promise()
+        .query("select * from department");
+      console.table(departments);
     } else if (action == "View all roles") {
-        const [roles] = await connection.promise().query(`
+      const [roles] = await connection.promise().query(`
             select r.id, r.title, r.salary, d.name as department
             from role r
             join department d on d.id = r.department_id
-        `)
-        console.table(roles)
+        `);
+      console.table(roles);
     } else if (action == "View all employees") {
-        const [employees] = await connection.promise().query(`
+      const [employees] = await connection.promise().query(`
             select 
                 e.id, 
                 e.first_name, 
@@ -59,10 +61,111 @@ async function main() {
             join role r on r.id = e.role_id
             left join employee m on m.id = e.manager_id
             join department d on d.id = r.department_id
-        `) 
-        console.table(employees)
+        `);
+      console.table(employees);
+    } else if (action == "Add a department") {
+      const departmentInfo = await inquirer.prompt([
+        {
+          name: "name",
+          message: "Enter department name",
+        },
+      ]);
+      await connection.promise().query(
+        `
+        INSERT INTO department(name)VALUES(?)
+      `,
+        [departmentInfo.name]
+      );
+    } else if (action == "Add a role") {
+      const [departments] = await connection.promise().query(`
+        SELECT * FROM department 
+      `);
+      const roleInfo = await inquirer.prompt([
+        { name: "title", message: "Enter name of role" },
+        { name: "salary", message: "Enter salary for role" },
+        {
+          name: "department",
+          message: "Select department for role",
+          type: "list",
+          choices: departments.map((department) => ({
+            name: department.name,
+            value: department.id,
+          })),
+        },
+      ]);
+      await connection.promise().query(
+        `
+        INSERT INTO role(title, salary, department_id)
+        VALUES(?,?,?)
+      `,
+        [roleInfo.title, roleInfo.salary, roleInfo.department]
+      );
+    } else if (action == "Add an employee") {
+      const [employees] = await connection.promise().query(`
+        SELECT id AS value, CONCAT(first_name, ' ', last_name) AS name
+        FROM employee
+      `);
+      const [roles] = await connection.promise().query(`
+        SELECT id AS value, title AS name
+        FROM role
+      `);
+      const employeeInfo = await inquirer.prompt([
+        {
+          name: "firstName",
+          message: "Enter employee first name",
+        },
+        { name: "lastName", message: "Enter employee last name" },
+        {
+          name: "role",
+          message: "Select employee role",
+          type: "list",
+          choices: roles,
+        },
+        {
+          name: "manager",
+          message: "Select manager",
+          type: "list",
+          choices: [{ name: "None", value: null }, ...employees],
+        },
+      ]);
+      await connection.promise().query(
+        `
+        INSERT INTO employee(first_name, last_name, role_id, manager_id) 
+        VALUES(?, ?, ?, ?)
+      `,
+        [
+          employeeInfo.firstName,
+          employeeInfo.lastName,
+          employeeInfo.role,
+          employeeInfo.manager,
+        ]
+      );
+    } else if (action == "Update an employee role") {
+      const [roles] = await connection.promise().query(`
+        SELECT id AS value, title AS name
+        FROM role
+      `)
+      const [employees] = await connection.promise().query(`
+        SELECT id AS value, CONCAT(first_name, ' ', last_name) AS name
+        FROM employee
+      `);
+      const updateInfo = await inquirer.prompt([
+        {
+          name: "employee", message: "Select employee to update role",
+          type: "list", choices: employees
+        },
+        {
+          name: "role", message: "Select new role",
+          type: "list", choices: roles
+        }
+      ])
+      await connection.promise().query(`
+        UPDATE employee
+        SET role_id = ?
+        WHERE id = ?
+      `, [updateInfo.role, updateInfo.employee])
     }
-  }
+  } 
   connection.end();
 }
 main();
