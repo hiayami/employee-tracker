@@ -42,6 +42,10 @@ THEN I am prompted to select an employee to update and their new role and this i
 Ensure that you have node/npm installed as well as MySQL to run the application. Copy the repo to use.
 ## Usage
 This application is run in the command-line
+
+Link to full walk-through video of application: 
+https://drive.google.com/file/d/1hDYUJlUrRYixeLWVQsOcDrBgHjtOzSt6/view?usp=sharing
+
 ## License
 Read more about MIT License here: [MIT License](https://opensource.org/licenses/MIT)
 ## How to Contribute
