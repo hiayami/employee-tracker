@@ -39,7 +39,7 @@ THEN I am prompted to select an employee to update and their new role and this i
 * [Tests](#tests)
 * [Questions](#questions)
 ## Installation
-Ensure that you have node/npm installed as well as MySQL to run the application. Copy the repo to use.
+Clone the repo to use application.
 ## Usage
 This application is run in the command-line
 
