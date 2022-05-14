@@ -43,6 +43,8 @@ Ensure that you have node/npm installed as well as MySQL to run the application.
 ## Usage
 This application is run in the command-line
 
+![employee-tracker](https://user-images.githubusercontent.com/98536530/168442635-0a6f0beb-2340-4336-b31d-ba5d575ae700.gif)
+
 Link to full walk-through video of application: 
 https://drive.google.com/file/d/1hDYUJlUrRYixeLWVQsOcDrBgHjtOzSt6/view?usp=sharing
 
